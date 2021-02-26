@@ -3,6 +3,7 @@ package embeddedpostgres
 import (
 	"io"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -76,14 +77,24 @@ func (c Config) Password(password string) Config {
 // RuntimePath sets the path that will be used for the extracted Postgres runtime directory.
 // If Postgres data directory is not set with DataPath(), this directory is also used as data directory.
 func (c Config) RuntimePath(path string) Config {
-	c.runtimePath = path
+	if filepath.IsAbs(path) {
+		c.runtimePath = path
+	} else {
+		wd, _ := os.Getwd()
+		c.runtimePath = filepath.Join(wd, path)
+	}
 	return c
 }
 
 // DataPath sets the path that will be used for the Postgres data directory.
 // If this option is set, a previously initialized data directory will be reused if possible.
 func (c Config) DataPath(path string) Config {
-	c.dataPath = path
+	if filepath.IsAbs(path) {
+		c.dataPath = path
+	} else {
+		wd, _ := os.Getwd()
+		c.dataPath = filepath.Join(wd, path)
+	}
 	return c
 }
 
