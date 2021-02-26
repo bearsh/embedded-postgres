@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -41,6 +42,8 @@ func defaultInitDatabase(binaryExtractLocation, username, password, locale strin
 	if err := postgresInitDbProcess.Run(); err != nil {
 		return fmt.Errorf("unable to init database using: %s", postgresInitDbProcess.String())
 	}
+
+	os.Remove(passwordFile)
 
 	return nil
 }
