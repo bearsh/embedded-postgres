@@ -61,7 +61,7 @@ func Test_ErrorWhenPortAlreadyTaken(t *testing.T) {
 
 func Test_ErrorWhenRemoteFetchError(t *testing.T) {
 	database := NewDatabase()
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return "", false
 	}
 	database.remoteFetchStrategy = func() error {
@@ -83,7 +83,7 @@ func Test_ErrorWhenUnableToUnArchiveFile_WrongFormat(t *testing.T) {
 		Database("beer").
 		StartTimeout(10 * time.Second))
 
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return jarFile, true
 	}
 
@@ -114,7 +114,7 @@ func Test_ErrorWhenUnableToInitDatabase(t *testing.T) {
 		RuntimePath(extractPath).
 		StartTimeout(10 * time.Second))
 
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return jarFile, true
 	}
 
@@ -217,7 +217,7 @@ func Test_ErrorWhenCannotStartPostgresProcess(t *testing.T) {
 	database := NewDatabase(DefaultConfig().
 		RuntimePath(extractPath))
 
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return jarFile, true
 	}
 
