@@ -8,16 +8,19 @@ import (
 
 // Config maintains the runtime configuration for the Postgres process to be created.
 type Config struct {
-	version      PostgresVersion
-	port         uint32
-	database     string
-	username     string
-	password     string
-	runtimePath  string
-	dataPath     string
-	locale       string
-	startTimeout time.Duration
-	logger       io.Writer
+	version             PostgresVersion
+	port                uint32
+	database            string
+	username            string
+	password            string
+	runtimePath         string
+	dataPath            string
+	locale              string
+	startTimeout        time.Duration
+	logger              io.Writer
+	cacheLocator        CacheLocator
+	remoteFetchStrategy RemoteFetchStrategy
+	unpacker            Unpacker
 }
 
 // DefaultConfig provides a default set of configuration to be used "as is" or modified using the provided builders.
@@ -99,6 +102,18 @@ func (c Config) StartTimeout(timeout time.Duration) Config {
 // Logger sets the logger for postgres output
 func (c Config) Logger(logger io.Writer) Config {
 	c.logger = logger
+	return c
+}
+
+// CacheLocator sets the cache locator function
+func (c Config) CacheLocator(cl CacheLocator) Config {
+	c.cacheLocator = cl
+	return c
+}
+
+// Unpacker sets the unpacker function
+func (c Config) Unpacker(u Unpacker) Config {
+	c.unpacker = u
 	return c
 }
 
