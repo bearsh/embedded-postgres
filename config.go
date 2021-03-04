@@ -1,6 +1,7 @@
 package embeddedpostgres
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -22,6 +23,7 @@ type Config struct {
 	cacheLocator        CacheLocator
 	remoteFetchStrategy RemoteFetchStrategy
 	unpacker            Unpacker
+	serverOptions       ServerOptions
 }
 
 // DefaultConfig provides a default set of configuration to be used "as is" or modified using the provided builders.
@@ -128,6 +130,12 @@ func (c Config) Unpacker(u Unpacker) Config {
 	return c
 }
 
+// ServerOptions sets the unpacker function
+func (c Config) ServerOptions(o ServerOptions) Config {
+	c.serverOptions = o
+	return c
+}
+
 // PostgresVersion represents the semantic version used to fetch and run the Postgres process.
 type PostgresVersion string
 
@@ -139,3 +147,17 @@ const (
 	V10 = PostgresVersion("10.16.0")
 	V9  = PostgresVersion("9.6.21")
 )
+
+type ServerOptions []string
+
+func NewServerOptions() ServerOptions {
+	return ServerOptions{}
+}
+
+func (o ServerOptions) Append(s string) ServerOptions {
+	if len(s) > 0 {
+		x := append(o, "-o")
+		return append(x, fmt.Sprintf(`"%v"`, s))
+	}
+	return o
+}
