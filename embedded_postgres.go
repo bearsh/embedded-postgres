@@ -158,9 +158,13 @@ func (ep *EmbeddedPostgres) Stop() error {
 
 func startPostgres(binaryExtractLocation string, config Config) error {
 	postgresBinary := filepath.Join(binaryExtractLocation, "bin/pg_ctl")
-	postgresProcess := exec.Command(postgresBinary, "start", "-w",
+	args := []string{
+		"start", "-w",
 		"-D", userDataPathOrDefault(config.dataPath, binaryExtractLocation),
-		"-o", fmt.Sprintf(`"-p %d"`, config.port))
+		"-o", fmt.Sprintf(`"-p %d"`, config.port),
+	}
+	args = append(args, config.serverOptions...)
+	postgresProcess := exec.Command(postgresBinary, args...)
 	log.Println(postgresProcess.String())
 	postgresProcess.Stderr = config.logger
 	postgresProcess.Stdout = config.logger
