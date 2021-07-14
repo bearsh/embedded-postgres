@@ -21,7 +21,7 @@ func Test_DefaultConfig(t *testing.T) {
 		shutdownDBAndFail(t, err, database)
 	}
 
-	db, err := sql.Open("postgres", fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"))
+	db, err := sql.Open("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		shutdownDBAndFail(t, err, database)
 	}
@@ -61,7 +61,7 @@ func Test_ErrorWhenPortAlreadyTaken(t *testing.T) {
 
 func Test_ErrorWhenRemoteFetchError(t *testing.T) {
 	database := NewDatabase()
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return "", false
 	}
 	database.remoteFetchStrategy = func() error {
@@ -83,7 +83,7 @@ func Test_ErrorWhenUnableToUnArchiveFile_WrongFormat(t *testing.T) {
 		Database("beer").
 		StartTimeout(10 * time.Second))
 
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return jarFile, true
 	}
 
@@ -114,7 +114,7 @@ func Test_ErrorWhenUnableToInitDatabase(t *testing.T) {
 		RuntimePath(extractPath).
 		StartTimeout(10 * time.Second))
 
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return jarFile, true
 	}
 
@@ -217,7 +217,7 @@ func Test_ErrorWhenCannotStartPostgresProcess(t *testing.T) {
 	database := NewDatabase(DefaultConfig().
 		RuntimePath(extractPath))
 
-	database.cacheLocator = func() (string, bool) {
+	database.CacheLocator = func() (string, bool) {
 		return jarFile, true
 	}
 
@@ -257,7 +257,7 @@ func Test_CustomConfig(t *testing.T) {
 		shutdownDBAndFail(t, err, database)
 	}
 
-	db, err := sql.Open("postgres", fmt.Sprintf("host=localhost port=9876 user=gin password=wine dbname=beer sslmode=disable"))
+	db, err := sql.Open("postgres", "host=localhost port=9876 user=gin password=wine dbname=beer sslmode=disable")
 	if err != nil {
 		shutdownDBAndFail(t, err, database)
 	}
@@ -282,7 +282,7 @@ func Test_CustomLocaleConfig(t *testing.T) {
 		shutdownDBAndFail(t, err, database)
 	}
 
-	db, err := sql.Open("postgres", fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"))
+	db, err := sql.Open("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		shutdownDBAndFail(t, err, database)
 	}
@@ -307,7 +307,7 @@ func Test_CanStartAndStopTwice(t *testing.T) {
 		shutdownDBAndFail(t, err, database)
 	}
 
-	db, err := sql.Open("postgres", fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"))
+	db, err := sql.Open("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		shutdownDBAndFail(t, err, database)
 	}
@@ -328,7 +328,7 @@ func Test_CanStartAndStopTwice(t *testing.T) {
 		shutdownDBAndFail(t, err, database)
 	}
 
-	db, err = sql.Open("postgres", fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"))
+	db, err = sql.Open("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		shutdownDBAndFail(t, err, database)
 	}
@@ -365,7 +365,7 @@ func Test_ReuseData(t *testing.T) {
 		shutdownDBAndFail(t, err, database)
 	}
 
-	db, err := sql.Open("postgres", fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"))
+	db, err := sql.Open("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		shutdownDBAndFail(t, err, database)
 	}
@@ -392,7 +392,7 @@ func Test_ReuseData(t *testing.T) {
 		shutdownDBAndFail(t, err, database)
 	}
 
-	db, err = sql.Open("postgres", fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable"))
+	db, err = sql.Open("postgres", "host=localhost port=5432 user=postgres password=postgres dbname=postgres sslmode=disable")
 	if err != nil {
 		shutdownDBAndFail(t, err, database)
 	}

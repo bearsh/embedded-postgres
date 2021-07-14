@@ -9,19 +9,20 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
-
-	"github.com/mholt/archiver/v3"
 )
 
 // EmbeddedPostgres maintains all configuration and runtime functions for maintaining the lifecycle of one Postgres process.
 type EmbeddedPostgres struct {
 	config              Config
-	cacheLocator        CacheLocator
+	CacheLocator        CacheLocator
+	unpacker            Unpacker
 	remoteFetchStrategy RemoteFetchStrategy
 	initDatabase        initDatabase
 	createDatabase      createDatabase
 	started             bool
+	VersionStrategy     VersionStrategy
 }
 
 // NewDatabase creates a new EmbeddedPostgres struct that can be used to start and stop a Postgres process.
@@ -36,18 +37,37 @@ func NewDatabase(config ...Config) *EmbeddedPostgres {
 }
 
 func newDatabaseWithConfig(config Config) *EmbeddedPostgres {
-	versionStrategy := defaultVersionStrategy(config)
-	cacheLocator := defaultCacheLocator(versionStrategy)
-	remoteFetchStrategy := defaultRemoteFetchStrategy("https://repo1.maven.org", versionStrategy, cacheLocator)
-
-	return &EmbeddedPostgres{
-		config:              config,
-		cacheLocator:        cacheLocator,
-		remoteFetchStrategy: remoteFetchStrategy,
-		initDatabase:        defaultInitDatabase,
-		createDatabase:      defaultCreateDatabase,
-		started:             false,
+	ep := &EmbeddedPostgres{
+		config:         config,
+		initDatabase:   defaultInitDatabase,
+		createDatabase: defaultCreateDatabase,
+		started:        false,
 	}
+
+	ep.VersionStrategy = defaultVersionStrategy(
+		config,
+		runtime.GOOS,
+		runtime.GOARCH,
+		linuxMachineName,
+		shouldUseAlpineLinuxBuild,
+	)
+	if config.cacheLocator == nil {
+		ep.CacheLocator = defaultCacheLocator(ep.VersionStrategy)
+	} else {
+		ep.CacheLocator = config.cacheLocator
+	}
+	if config.remoteFetchStrategy == nil {
+		ep.remoteFetchStrategy = defaultRemoteFetchStrategy("https://repo1.maven.org", ep.VersionStrategy, ep.CacheLocator)
+	} else {
+		ep.remoteFetchStrategy = config.remoteFetchStrategy
+	}
+	if config.unpacker == nil {
+		ep.unpacker = defaultUnpacker()
+	} else {
+		ep.unpacker = config.unpacker
+	}
+
+	return ep
 }
 
 // Start will try to start the configured Postgres process returning an error when there were any problems with invocation.
@@ -62,7 +82,7 @@ func (ep *EmbeddedPostgres) Start() error {
 		return err
 	}
 
-	cacheLocation, exists := ep.cacheLocator()
+	cacheLocation, exists := ep.CacheLocator()
 	if !exists {
 		if err := ep.remoteFetchStrategy(); err != nil {
 			return err
@@ -74,8 +94,8 @@ func (ep *EmbeddedPostgres) Start() error {
 		return fmt.Errorf("unable to clean up runtime directory %s with error: %s", binaryExtractLocation, err)
 	}
 
-	if err := archiver.NewTarXz().Unarchive(cacheLocation, binaryExtractLocation); err != nil {
-		return fmt.Errorf("unable to extract postgres archive %s to %s", cacheLocation, binaryExtractLocation)
+	if err := ep.unpacker(cacheLocation, binaryExtractLocation); err != nil {
+		return err
 	}
 
 	dataLocation := userDataPathOrDefault(ep.config.dataPath, binaryExtractLocation)
@@ -121,7 +141,7 @@ func (ep *EmbeddedPostgres) Start() error {
 
 // Stop will try to stop the Postgres process gracefully returning an error when there were any problems.
 func (ep *EmbeddedPostgres) Stop() error {
-	cacheLocation, exists := ep.cacheLocator()
+	cacheLocation, exists := ep.CacheLocator()
 	if !exists || !ep.started {
 		return errors.New("server has not been started")
 	}
@@ -138,9 +158,13 @@ func (ep *EmbeddedPostgres) Stop() error {
 
 func startPostgres(binaryExtractLocation string, config Config) error {
 	postgresBinary := filepath.Join(binaryExtractLocation, "bin/pg_ctl")
-	postgresProcess := exec.Command(postgresBinary, "start", "-w",
+	args := []string{
+		"start", "-w",
 		"-D", userDataPathOrDefault(config.dataPath, binaryExtractLocation),
-		"-o", fmt.Sprintf(`"-p %d"`, config.port))
+		"-o", fmt.Sprintf(`"-p %d"`, config.port),
+	}
+	args = append(args, config.serverOptions...)
+	postgresProcess := exec.Command(postgresBinary, args...)
 	log.Println(postgresProcess.String())
 	postgresProcess.Stderr = config.logger
 	postgresProcess.Stdout = config.logger

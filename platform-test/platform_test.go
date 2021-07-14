@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	embeddedpostgres "github.com/fergusstrange/embedded-postgres"
+	embeddedpostgres "github.com/bearsh/embedded-postgres"
 )
 
 func Test_AllMajorVersions(t *testing.T) {

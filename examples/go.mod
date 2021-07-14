@@ -1,11 +1,11 @@
-module github.com/fergusstrange/embedded-postgres/examples
+module github.com/bearsh/embedded-postgres/examples
 
 go 1.13
 
-replace github.com/fergusstrange/embedded-postgres => ../
+replace github.com/bearsh/embedded-postgres => ../
 
 require (
-	github.com/fergusstrange/embedded-postgres v0.0.0
+	github.com/bearsh/embedded-postgres v0.0.0
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.8.0
 	github.com/pkg/errors v0.9.1 // indirect
